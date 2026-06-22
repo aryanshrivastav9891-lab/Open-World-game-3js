@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>大和村 · Yamato-mura</title>
+    <style>
+      :root {
+        --ink: #1a1310;
+        --paper: #f3ece0;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 100%; height: 100%; overflow: hidden; background: #0b0d12; }
+      body {
+        font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, sans-serif;
+        color: #f6efe2;
+        -webkit-font-smoothing: antialiased;
+      }
+      #app { position: fixed; inset: 0; }
+      canvas { display: block; outline: none; }
+      /* Prevent text selection while playing */
+      #app, #hud { user-select: none; -webkit-user-select: none; }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="hud"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
