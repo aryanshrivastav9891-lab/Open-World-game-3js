@@ -24,6 +24,7 @@ const SVG = {
 export class ActionHUD {
   constructor(powers) {
     this.powers = powers;
+    this.onSelect = null; // Game wires this so tapping a slot picks that power (touch)
     this._injectStyles();
     const root = document.getElementById('hud') || document.body;
 
@@ -58,6 +59,9 @@ export class ActionHUD {
       slot.style.setProperty('--c', '#' + p.color.toString(16).padStart(6, '0'));
       const keyLabel = i < 10 ? (i + 1) % 10 : 'V'; // 1-9, 0 (10th), V (Summon, 11th)
       slot.innerHTML = `<div class="ah-cd"></div><div class="ah-key">${keyLabel}</div><div class="ah-ic">${p.icon}</div><div class="ah-nm">${p.name}</div>`;
+      // Tap to select (no number keys on a phone). Only fires where the slot is
+      // interactive — i.e. the touch layout, which sets pointer-events:auto.
+      slot.addEventListener('click', () => this.onSelect && this.onSelect(i));
       this.slotsEl.appendChild(slot);
       return { el: slot, cd: slot.querySelector('.ah-cd') };
     });

@@ -111,7 +111,9 @@ export class Game {
     this.player = new Player();
     this.scene.add(this.player.mesh);
     this.controls = new Controls(this.renderer.domElement);
-    this.isTouch = Controls.isTouchDevice();
+    // ?touch=1 forces the on-screen controller (preview phone view on desktop)
+    const forceTouch = typeof location !== 'undefined' && /[?&]touch=1\b/.test(location.search);
+    this.isTouch = forceTouch || Controls.isTouchDevice();
     this.controls.setTouchMode(this.isTouch); // phones: simulate pointer-lock, drive input via the touch overlay
     this.tpsCamera = new ThirdPersonCamera(this.camera);
     this.chunks = new ChunkManager(this.scene);
@@ -164,6 +166,7 @@ export class Game {
     // --- Wave-5: unified ActionHUD (vitals + abilities + weapon) ---
     this.actionHUD = new ActionHUD(this.powers.powers);
     this.powers.setHUD(this.actionHUD); // PowerManager now drives the ActionHUD
+    this.actionHUD.onSelect = (i) => this.powers.setActive(i); // tap a power slot (touch) to select it
 
     // --- Wave-8: progression (skill points) + skill tree + spells ---
     this.progression = new Progression();
@@ -268,6 +271,13 @@ export class Game {
     this.hud.finishLoading();
     this.state = 'start'; // demo flow: start screen → play → win
     this.screens.showStart();
+    // ?play=1 skips the menu and drops straight into the world (dev / preview)
+    if (typeof location !== 'undefined' && /[?&]play=1\b/.test(location.search)) {
+      this.audio.start();
+      this.screens.hide();
+      this.state = 'playing';
+      this.controls.requestLock();
+    }
   }
 
   _setupLights() {

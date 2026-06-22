@@ -347,6 +347,97 @@ function injectStyles() {
     .tc-primary { width:84px; height:84px; }
     .tc-btn { width:58px; height:58px; }
   }
+
+  /* =================================================================
+     Mobile HUD layout — reflow the existing game UI for phone screens so
+     nothing is clipped or hidden behind the on-screen controls. Scoped to
+     body.ym-touch (set only on touch devices) with !important so it wins
+     over panel styles that other modules inject lazily on first open.
+     ================================================================= */
+
+  /* Power bar → full-width scrollable strip pinned to the top, lifted above
+     the camera-look layer so the 11 slots can be swiped through and tapped. */
+  body.ym-touch .ah-wrap { top:calc(env(safe-area-inset-top,0px) + 6px) !important; bottom:auto !important;
+    left:6px !important; right:6px !important; flex-direction:column !important; align-items:stretch !important;
+    justify-content:flex-start !important; gap:6px !important; z-index:21 !important; }
+  body.ym-touch .ah-center { order:1; width:100%; align-items:stretch !important; gap:6px !important; }
+  body.ym-touch .ah-slots { overflow-x:auto; overflow-y:hidden; flex-wrap:nowrap !important; justify-content:flex-start;
+    pointer-events:auto; padding:3px 2px 7px; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  body.ym-touch .ah-slots::-webkit-scrollbar { display:none; }
+  body.ym-touch .ah-slot { width:50px !important; height:50px !important; flex:0 0 auto; cursor:pointer; }
+  body.ym-touch .ah-slot.active { transform:translateY(-2px) scale(1.05) !important; }
+  body.ym-touch .ah-ic { font-size:22px !important; margin-top:5px; }
+  body.ym-touch .ah-nm { display:none !important; }
+  body.ym-touch .ah-chips, body.ym-touch .ah-hints { display:none !important; }
+  body.ym-touch .ah-vitals { order:2; display:flex !important; flex-direction:row !important; min-width:0 !important;
+    gap:8px !important; width:100%; }
+  body.ym-touch .ah-bar { flex:1 1 0; gap:5px; }
+  body.ym-touch .ah-bar-label { width:auto !important; font-size:9px; }
+  body.ym-touch .ah-bar-track { height:8px; }
+
+  /* Minimap → smaller, on the right just below the power strip */
+  body.ym-touch .ym-minimap { top:calc(env(safe-area-inset-top,0px) + 96px) !important; right:8px !important; width:100px !important; }
+  body.ym-touch .ym-minimap canvas { width:100px !important; height:100px !important; }
+  body.ym-touch .ym-maplabel { font-size:10px !important; margin-top:3px !important; }
+
+  /* Touch menu pills → icon-only row, top-left below the power strip */
+  body.ym-touch .tc-bar { top:calc(env(safe-area-inset-top,0px) + 96px) !important; left:8px !important; right:auto !important;
+    flex-direction:row !important; justify-content:flex-start !important; flex-wrap:wrap; max-width:54vw; }
+  body.ym-touch .tc-pill { min-width:42px; height:40px; padding:0 9px; border-radius:12px !important; }
+  body.ym-touch .tc-pill .tc-label { display:none; }
+  body.ym-touch .tc-pill .tc-glyph { font-size:19px; }
+
+  /* Mission HUD → top-left, under the menu pills, compact */
+  body.ym-touch .ym-mh { top:calc(env(safe-area-inset-top,0px) + 146px) !important; left:8px !important;
+    min-width:0 !important; max-width:58vw; padding:8px 10px !important; }
+  body.ym-touch .ym-mh-deathbig { font-size:32px !important; }
+  body.ym-touch .ym-mh-deathsub { font-size:15px !important; }
+
+  /* Bottom-right action buttons → a tidy, fully-bounded 3-wide grid (the
+     hand-placed circles overflowed narrow screens). Primary stays emphasised. */
+  body.ym-touch .tc-cluster { display:grid !important; grid-template-columns:repeat(3, 58px) !important;
+    grid-auto-rows:58px !important; gap:9px !important; width:auto !important; height:auto !important;
+    right:8px !important; bottom:calc(env(safe-area-inset-bottom,0px) + 8px) !important; }
+  body.ym-touch .tc-cluster > button { position:static !important; inset:auto !important; right:auto !important;
+    left:auto !important; top:auto !important; bottom:auto !important; width:58px !important; height:58px !important; }
+  body.ym-touch .tc-primary { background:rgba(224,86,63,.5) !important; border-color:rgba(255,210,74,.9) !important; }
+  body.ym-touch .tc-primary .tc-glyph { font-size:26px !important; }
+
+  /* Secondary actions → a wrapping row just above the action grid, kept clear
+     of the joystick on the left */
+  body.ym-touch .tc-col { top:auto !important; bottom:calc(env(safe-area-inset-bottom,0px) + 148px) !important;
+    right:8px !important; left:auto !important; transform:none !important; flex-direction:row !important;
+    flex-wrap:wrap !important; justify-content:flex-end !important; gap:9px !important; max-width:calc(100vw - 172px); }
+  body.ym-touch .tc-sm { width:50px !important; height:50px !important; }
+
+  /* transient text → clear of the top bar and the thumb controls */
+  body.ym-touch .ym-toast { top:30% !important; max-width:84vw !important; font-size:15px !important; }
+  body.ym-touch .ym-prompt { bottom:28% !important; font-size:14px !important; }
+  body.ym-touch .ym-stream { display:none !important; }
+  body.ym-touch .ml-root { min-width:0 !important; max-width:86vw !important; }
+
+  /* Full-screen menus → fit the viewport and scroll instead of clipping */
+  body.ym-touch .ym-panel { min-width:0 !important; width:min(340px,92vw) !important; max-height:88vh; overflow:auto; padding:18px 20px !important; }
+  body.ym-touch .ym-panel h1 { font-size:22px !important; }
+
+  body.ym-touch .ym-map-inner { padding:14px 16px !important; max-height:92vh; overflow:auto; width:min(94vw,560px); }
+  body.ym-touch .ym-map-body { flex-direction:column !important; align-items:center !important; gap:12px !important; }
+  body.ym-touch .ym-map canvas { width:72vw !important; height:72vw !important; max-width:72vw !important; max-height:72vw !important; }
+  body.ym-touch .ym-map-side { min-width:0 !important; width:100%; }
+  body.ym-touch .ym-map-inner h1 { font-size:20px !important; }
+
+  body.ym-touch .st-panel { min-width:0 !important; width:min(94vw,560px) !important; max-height:88vh; overflow:auto; padding:16px !important; }
+  body.ym-touch .st-cols { flex-direction:column !important; gap:14px !important; }
+  body.ym-touch .st-panel h1 { font-size:20px !important; }
+
+  body.ym-touch .sl-panel { width:min(94vw,560px) !important; max-height:90vh; overflow:auto; padding:16px !important; }
+  body.ym-touch .sl-new { flex-wrap:wrap; }
+
+  body.ym-touch .sc-panel { padding:18px !important; max-height:92vh; overflow:auto; }
+  body.ym-touch .sc-title { font-size:30px !important; }
+  body.ym-touch .sc-sub { font-size:13px !important; }
+  body.ym-touch .sc-keys { font-size:11px !important; }
+  body.ym-touch .sc-btn { font-size:16px !important; padding:11px 26px !important; }
   `;
   const style = document.createElement('style');
   style.textContent = css;
