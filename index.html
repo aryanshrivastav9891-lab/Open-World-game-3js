@@ -2,7 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#0b0d12" />
     <title>大和村 · Yamato-mura</title>
     <style>
       :root {
@@ -10,14 +14,16 @@
         --paper: #f3ece0;
       }
       * { margin: 0; padding: 0; box-sizing: border-box; }
-      html, body { width: 100%; height: 100%; overflow: hidden; background: #0b0d12; }
+      html, body { width: 100%; height: 100%; overflow: hidden; background: #0b0d12;
+        /* kill mobile scroll / pull-to-refresh / pinch-zoom so drags drive the camera */
+        overscroll-behavior: none; touch-action: none; }
       body {
         font-family: "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, sans-serif;
         color: #f6efe2;
         -webkit-font-smoothing: antialiased;
       }
-      #app { position: fixed; inset: 0; }
-      canvas { display: block; outline: none; }
+      #app { position: fixed; inset: 0; touch-action: none; }
+      canvas { display: block; outline: none; touch-action: none; }
       /* Prevent text selection while playing */
       #app, #hud { user-select: none; -webkit-user-select: none; }
     </style>

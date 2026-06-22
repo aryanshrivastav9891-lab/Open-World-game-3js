@@ -111,6 +111,16 @@ export class PowerManager {
     else this._manualEdge = true;
   }
 
+  // Advance to the next (or previous) unlocked power — used by the touch
+  // overlay's power-switch button, which has no number keys to press.
+  cycleActive(dir = 1) {
+    const n = this.powers.length;
+    for (let step = 1; step <= n; step++) {
+      const i = (((this.active + dir * step) % n) + n) % n;
+      if (!this.powers[i].locked) { this.setActive(i); return; }
+    }
+  }
+
   setActive(i) {
     if (i === this.active || i < 0 || i >= this.powers.length) return;
     if (this.powers[i].locked) { // a not-yet-unlocked spell

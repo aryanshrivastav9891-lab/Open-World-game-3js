@@ -5,6 +5,7 @@ import { Interiors } from './world/Interiors.js';
 import { Interactables } from './world/Interactables.js';
 import { Player } from './player/Player.js';
 import { Controls } from './player/Controls.js';
+import { TouchControls } from './ui/TouchControls.js';
 import { ThirdPersonCamera } from './player/ThirdPersonCamera.js';
 import { HUD } from './ui/HUD.js';
 import { CombatHUD } from './ui/CombatHUD.js';
@@ -110,6 +111,8 @@ export class Game {
     this.player = new Player();
     this.scene.add(this.player.mesh);
     this.controls = new Controls(this.renderer.domElement);
+    this.isTouch = Controls.isTouchDevice();
+    this.controls.setTouchMode(this.isTouch); // phones: simulate pointer-lock, drive input via the touch overlay
     this.tpsCamera = new ThirdPersonCamera(this.camera);
     this.chunks = new ChunkManager(this.scene);
     this.interact = new Interactables();
@@ -250,6 +253,12 @@ export class Game {
     this.tpsCamera.setYaw(0); // camera sits behind, also looking -Z
 
     this._wireInput();
+    // On phones / tablets, build the on-screen controller. It feeds the same
+    // Controls instance, so the rest of the game is untouched.
+    if (this.isTouch) {
+      this.touch = new TouchControls(this.controls, this);
+      document.body.classList.add('ym-touch');
+    }
     this._applyDayNight(0, true);
 
     await this._preloadWorld();
@@ -378,6 +387,10 @@ export class Game {
     else if (this.state === 'saves') this._updateSaves(dt);
     else if (this.state === 'dead') this._updateDead(dt);
     // 'paused' and 'transition' render a frozen frame
+
+    // Touch overlay is live only while actually playing (hidden in menus,
+    // map, pause, death, etc. so it never covers those screens).
+    if (this.touch) this.touch.setVisible(this.state === 'playing' || this.state === 'interior');
 
     this._render();
   }

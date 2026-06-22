@@ -25,7 +25,32 @@ export class Controls {
     this._justPressed = new Set();
     this.onPointerUnlock = null; // Game hooks pause here
 
+    // Touch (phone / tablet) input. When isTouch is on, an on-screen
+    // TouchControls overlay drives these instead of mouse + keyboard, and
+    // pointer-lock is simulated (locked is toggled directly) so every system
+    // that gates on `locked` keeps working unchanged.
+    this.isTouch = false;
+    this._touchForward = 0;
+    this._touchRight = 0;
+    this._touchRun = false;
+
     this._bind();
+  }
+
+  // Treat as a phone / tablet when the primary pointer can't hover and is
+  // coarse (a finger), or when it's a small touch screen. A touch-capable
+  // laptop with a mouse stays on the desktop mouse-look path.
+  static isTouchDevice() {
+    if (typeof window === 'undefined') return false;
+    const mm = (q) => !!(window.matchMedia && window.matchMedia(q).matches);
+    const hasTouch = 'ontouchstart' in window || (navigator.maxTouchPoints || 0) > 0;
+    const noHoverCoarse = mm('(hover: none) and (pointer: coarse)');
+    const smallTouch = hasTouch && Math.min(window.innerWidth, window.innerHeight) <= 820;
+    return noHoverCoarse || smallTouch;
+  }
+
+  setTouchMode(on) {
+    this.isTouch = !!on;
   }
 
   _bind() {
@@ -133,11 +158,33 @@ export class Controls {
   }
 
   requestLock() {
+    // Touch has no pointer lock — just mark ourselves "engaged" so the rest of
+    // the game (powers, camera, combat) behaves as if the mouse were captured.
+    if (this.isTouch) { this.locked = true; return; }
     if (!this.locked && this.dom.requestPointerLock) this.dom.requestPointerLock();
   }
 
   exitLock() {
+    if (this.isTouch) {
+      if (this.locked) { this.locked = false; this._flushInput(); }
+      return;
+    }
     if (this.locked && document.exitPointerLock) document.exitPointerLock();
+  }
+
+  // Drop any buffered presses / held input — used when leaving the playing
+  // state so nothing fires spuriously when play resumes.
+  _flushInput() {
+    this._justPressed.clear();
+    this.mouseDown = false;
+    this._mouseEdge = false;
+    this.rmbDown = false;
+    this._dash = null;
+    this.yawDelta = 0;
+    this.pitchDelta = 0;
+    this._touchForward = 0;
+    this._touchRight = 0;
+    this._touchRun = false;
   }
 
   // Edge-triggered: true once per physical press.
@@ -153,7 +200,8 @@ export class Controls {
     return (
       (this.keys['KeyW'] || this.keys['ArrowUp'] ? 1 : 0) -
       (this.keys['KeyS'] || this.keys['ArrowDown'] ? 1 : 0) +
-      this._padForward
+      this._padForward +
+      this._touchForward
     );
   }
 
@@ -161,12 +209,53 @@ export class Controls {
     return (
       (this.keys['KeyD'] || this.keys['ArrowRight'] ? 1 : 0) -
       (this.keys['KeyA'] || this.keys['ArrowLeft'] ? 1 : 0) +
-      this._padRight
+      this._padRight +
+      this._touchRight
     );
   }
 
   get run() {
-    return !!(this.keys['ShiftLeft'] || this.keys['ShiftRight'] || this._padRun);
+    return !!(this.keys['ShiftLeft'] || this.keys['ShiftRight'] || this._padRun || this._touchRun);
+  }
+
+  // --- touch input (driven by the on-screen TouchControls overlay) -----
+  // Left joystick → movement intent; magnitude near the rim flags a sprint.
+  touchMove(forward, right, run) {
+    this._touchForward = forward;
+    this._touchRight = right;
+    this._touchRun = !!run;
+  }
+
+  // Drag on the look zone → camera orbit (already scaled by the overlay).
+  touchLook(dx, dy) {
+    this.yawDelta -= dx;
+    this.pitchDelta += (this.invertY ? 1 : -1) * dy;
+  }
+
+  // Tap a button mapped to a keyboard action (jump, interact, sword, …).
+  touchPress(code) {
+    this._justPressed.add(code);
+  }
+
+  // Hold/release a button (flight ascend/descend lean on held keys).
+  touchHold(code, down) {
+    this.keys[code] = !!down;
+  }
+
+  // Big action button = left mouse: hold to fire a beam, tap to swing/cast.
+  touchPrimary(down) {
+    this.mouseDown = !!down;
+    if (down) this._mouseEdge = true;
+  }
+
+  // Block button = right mouse held.
+  touchBlock(down) {
+    this.rmbDown = !!down;
+  }
+
+  // Dash button → one-shot dash in the given intent direction.
+  touchDash(f, r) {
+    this._dash = { f, r };
   }
 
   // --- optional gamepad ------------------------------------------------
